@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+
+    <meta charset="UTF-8">
+    <title>Scraping</title>
+    <style>
+
+    </style>
+  </head>
+  <body>
+    <div id="wrapper">
+      <h1>NYC Scraper</h1>
+      <h2><i>Read:</i></h2>
+     <form role="form" action="/scrape" method="GET">
+      <button id="scrapeB">Scrape Articles</button>
+      </form>
+
+          <form role="form" action="/articles" method="GET">
+      <button id="allArt">Saved articles</button>
+      </form>
+      <div id="articles"></div>
+      <div id="notes"></div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
