@@ -8,7 +8,7 @@ $(document).on("click", "#scrapeB", function(){
       $("#articles").append("<p id= "+data[i].id+">" + data[i].title + "<br />" + data[i].link + "</p>");
      $("#articles").append("<button class="+"save"+" id= "+data[i].id+">" +"SAVE"+ "</button>");
     };
-
+//Save function
       $(document).on("click",  ".save", function() {
           console.log("client saving");
             var savedData = {};
@@ -34,6 +34,7 @@ $(document).on("click", "#scrapeB", function(){
 $(document).on("click", "#allArt", function(){
 	$.getJSON("/articles", function(data) {
 	  // For each one
+    console.log("Some from  DB:")
       $("#articles").html('');
 	  for (var i = 0; i < 10; i++) {
 	    // Display the apropos information on the page

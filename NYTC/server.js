@@ -50,9 +50,9 @@ app.get("/", function (req, res) {
 });
 
 
-
+ var result = [];
 app.get("/scrape", function (req, res) {
-  var result = [];
+ 
   // First, we grab the body of the html with request
   request("https://www.nytimes.com/", function (error, response, html) {
     // Then, we load that into cheerio and save it to $ for a shorthand selector
@@ -99,8 +99,10 @@ app.post("/save", function (req, res) {
 
 app.get("/articles", function (req, res) {
   // Grab every doc in the Articles array
+  console.log(" I'm looking for articles from server");
   var savedArticles = [];
   Article.find({}, function (error, doc) {
+    console.log(doc);
     for (i = 0; i < 10; i++) {
       var oneSavedArt = {
         title: (doc[i].title),
