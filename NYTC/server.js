@@ -35,80 +35,81 @@ mongoose.connect("mongodb://localhost/NYT");
 var db = mongoose.connection;
 
 // Show any mongoose errors
-db.on("error", function(error) {
+db.on("error", function (error) {
   console.log("Mongoose Error: ", error);
 });
 
 // Once logged in to the db through mongoose
-db.once("open", function() {
+db.once("open", function () {
   console.log("Mongoose connection successful.");
 });
 
 // Routes
-app.get("/", function(req, res) {
+app.get("/", function (req, res) {
   res.send("index.html");
 });
-var result = [];
 
 
-app.get("/scrape", function(req, res) {
+
+app.get("/scrape", function (req, res) {
+  var result = [];
   // First, we grab the body of the html with request
-  request("https://www.nytimes.com/", function(error, response, html) {
+  request("https://www.nytimes.com/", function (error, response, html) {
     // Then, we load that into cheerio and save it to $ for a shorthand selector
     var $ = cheerio.load(html);
     // Now, we grab every h2 within an article tag, and do the following:
-    
-    $("article h2").each(function(i, element) {
-     
+
+    $("article h2").each(function (i, element) {
+
       var newArt = {
-      	id: i,
-      	title: $(this).children("a").text(),
-      	link: $(this).children("a").attr("href")
+        id: i,
+        title: $(this).children("a").text(),
+        link: $(this).children("a").attr("href")
       };
       result.push(newArt);
     });
     console.log("Scraped");
- res.send(result);    
+    res.send(result);
+    // res.sendFile('scraped.html', {root: __dirname+ "/public"});    
   });
 });
 
 //Save 
-app.post("/save", function(req, res) {
-	 var saveMe = {};
-      saveMe.title = req.body.title;
-      saveMe.link = req.body.link;
-      console.log(saveMe); //undefined
-	  var entry = new Article(saveMe);
+app.post("/save", function (req, res) {
+  console.log("In save");
+  var saveMe = {};
+  saveMe.title = req.body.title;
+  saveMe.link = req.body.link;
+  var entry = new Article(saveMe);
 
-      // Now, save that entry to the db
-      entry.save(function(err, doc) {
-        // Log any errors
-        if (err) {
-          console.log(err);
-        }
-        // Or log the doc
-        else {
-        //  console.log(doc);
-        }
-      });
-      	console.log(entry);
+  // Now, save that entry to the db
+  entry.save(function (err, doc) {
+    // Log any errors
+    if (err) {
+      console.log(err);
+    }
+    // Or log the doc
+    else {
+      //  console.log(doc);
+    }
+  });
+  console.log(entry);
+
 });
 
-app.get("/articles", function(req, res) {
+app.get("/articles", function (req, res) {
   // Grab every doc in the Articles array
-   	var savedArticles = [];
-  Article.find({}, function(error, doc) {
-  	//console.log(doc[0]._id);
- 
-  	for(i=0; i<10; i++) {
-  		var oneSavedArt = {
-  	    title : (doc[i].title),
-  		id: (doc[i]._id),
-  		link: (doc[i].link)
-  		};
-  		savedArticles.push(oneSavedArt);
-  	};
-  	console.log(savedArticles);
+  var savedArticles = [];
+  Article.find({}, function (error, doc) {
+    for (i = 0; i < 10; i++) {
+      var oneSavedArt = {
+        title: (doc[i].title),
+        id: (doc[i]._id),
+        link: (doc[i].link)
+      };
+      savedArticles.push(oneSavedArt);
+    };
+    //console.log(savedArticles);
     // Log any errors
     if (error) {
       console.log(error);
@@ -116,25 +117,57 @@ app.get("/articles", function(req, res) {
     // Or send the doc to the browser as a json object
     else {
       res.send(savedArticles);
+      //res.sendFile('saved.html', {root: __dirname+ "/public"});
     }
   });
-
 });
 
-app.get("/articles/:id", function(req, res) {
+app.get("/articles/:id", function (req, res) {
   // Using the id passed in the id parameter, prepare a query that finds the matching one in our db...
   Article.findOne({ "_id": req.params.id })
-  // ..and populate all of the notes associated with it
-  .populate("note")
-  // now, execute our query
-  .exec(function(error, doc) {
+    // ..and populate all of the notes associated with it
+    .populate("note")
+    // now, execute our query
+    .exec(function (error, doc) {
+      // Log any errors
+      if (error) {
+        console.log(error);
+      }
+      // Otherwise, send the doc to the browser as a json object
+      else {
+        res.json(doc);
+      }
+    });
+});
+
+// Create a new note or replace an existing note
+app.post("/articles/:id", function (req, res) {
+  // Create a new note and pass the req.body to the entry
+  var newNote = new Note(req.body);
+  console.log(newNote);
+  // And save the new note the db
+  newNote.save(function (error, doc) {
+    console.log("!!!!!!!");
+    console.log(doc._id);
     // Log any errors
     if (error) {
       console.log(error);
     }
-    // Otherwise, send the doc to the browser as a json object
+    // Otherwise
     else {
-      res.json(doc);
+      // Use the article id to find and update it's note
+      Article.findOneAndUpdate({ "_id": req.body.id }, { "note": doc._id })
+        // Execute the above query
+        .exec(function (err, doc) {
+          // Log any errors
+          if (err) {
+            console.log(err);
+          }
+          else {
+            // Or send the document to the browser
+            res.send(doc);
+          }
+        });
     }
   });
 });
@@ -143,6 +176,7 @@ app.get("/articles/:id", function(req, res) {
 
 
 
-app.listen(3000, function() {
+
+app.listen(3000, function () {
   console.log("App running on port 3000!");
 });
