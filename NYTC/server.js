@@ -80,6 +80,7 @@ app.post("/save", function (req, res) {
   var saveMe = {};
   saveMe.title = req.body.title;
   saveMe.link = req.body.link;
+//  saveMe.note = [];
   var entry = new Article(saveMe);
 
   // Now, save that entry to the db
@@ -107,7 +108,8 @@ app.get("/articles", function (req, res) {
       var oneSavedArt = {
         title: (doc[i].title),
         id: (doc[i]._id),
-        link: (doc[i].link)
+        link: (doc[i].link),
+      //  note: (doc[i].note)
       };
       savedArticles.push(oneSavedArt);
     };
@@ -146,19 +148,21 @@ app.get("/articles/:id", function (req, res) {
 app.post("/articles/:id", function (req, res) {
   // Create a new note and pass the req.body to the entry
   var newNote = new Note(req.body);
+  console.log(req.params.id );
   console.log(newNote);
   // And save the new note the db
   newNote.save(function (error, doc) {
-    console.log("!!!!!!!");
-    console.log(doc._id);
     // Log any errors
     if (error) {
       console.log(error);
     }
     // Otherwise
     else {
+      console.log("------------");
+      
+      console.log(req.body.id);
       // Use the article id to find and update it's note
-      Article.findOneAndUpdate({ "_id": req.body.id }, { "note": doc._id })
+      Article.findOneAndUpdate({ "_id": req.params.id }, { "note": doc._id })
         // Execute the above query
         .exec(function (err, doc) {
           // Log any errors

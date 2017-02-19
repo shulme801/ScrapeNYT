@@ -71,7 +71,7 @@ $(document).on("click", ".note", function() {
       // A textarea to add a new note body
       $("#notes").append("<textarea id='bodyinput' name='body'></textarea>");
       // A button to submit a new note, with the id of the article saved to it
-      $("#notes").append("<button data-id='" + data._id + "' id='savenote'>Save Note</button>");
+      $("#notes").append("<button id='" + data._id + "' class='savenote'>Save Note</button>");
       //delete comment
       $("#notes").append("<button data-id='" + data._id + "' id='deletenote'>Delete Note</button>");      
 
@@ -86,7 +86,7 @@ $(document).on("click", ".note", function() {
 });
 
 // When you click the savenote button
-$(document).on("click", "#savenote", function() {
+$(document).on("click", ".savenote", function() {
   // Grab the id associated with the article from the submit button
   var thisId = $(this).attr("id");
 
