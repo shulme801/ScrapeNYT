@@ -103,7 +103,6 @@ app.get("/articles", function (req, res) {
   console.log(" I'm looking for articles from server");
   var savedArticles = [];
   Article.find({}, function (error, doc) {
-    console.log(doc);
     for (i = 0; i < 10; i++) {
       var oneSavedArt = {
         title: (doc[i].title),
@@ -128,6 +127,7 @@ app.get("/articles", function (req, res) {
 
 app.get("/articles/:id", function (req, res) {
   // Using the id passed in the id parameter, prepare a query that finds the matching one in our db...
+  console.log(req.params.id);
   Article.findOne({ "_id": req.params.id })
     // ..and populate all of the notes associated with it
     .populate("note")
@@ -144,28 +144,33 @@ app.get("/articles/:id", function (req, res) {
     });
 });
 
-// Create a new note or replace an existing note
+// Create a new note or replace an existing  note
 app.post("/articles/:id", function (req, res) {
+
   // Create a new note and pass the req.body to the entry
   var newNote = new Note(req.body);
-  console.log(req.params.id );
   console.log(newNote);
+
   // And save the new note the db
   newNote.save(function (error, doc) {
+
     // Log any errors
     if (error) {
       console.log(error);
     }
     // Otherwise
     else {
-      console.log("------------");
-      
-      console.log(req.body.id);
+
+       console.log(req.params.id);
+       console.log(doc._id);
       // Use the article id to find and update it's note
-      Article.findOneAndUpdate({ "_id": req.params.id }, { "note": doc._id })
+      Article.findOneAndUpdate({ "_id": req.params.id }, { $push: 
+      { "note": doc._id }
+      })
         // Execute the above query
         .exec(function (err, doc) {
-          // Log any errors
+                 console.log("here"); 
+                 // Log any errors
           if (err) {
             console.log(err);
           }
@@ -176,6 +181,20 @@ app.post("/articles/:id", function (req, res) {
         });
     }
   });
+});
+
+app.post("/deletenote/:id", function (req, res) {
+  console.log("DELETE");
+  console.log(req.params.id);
+  console.log(req.body.id);
+      Note.findById( req.params.id, function(err, doc) {
+        if(err){
+          console.log(err);
+        }
+        console.log(doc)
+       doc.remove(doc);
+        console.log("Deleted");
+      })
 });
 
 
